@@ -5,10 +5,10 @@ import androidx.lifecycle.Observer
 import com.getupside.spdassignment.model.PagedListState
 import com.getupside.spdassignment.model.PagedListStatus
 
-class ImageDataStateLiveData(private val pagedListState: LiveData<PagedListState>)
+class ImageDataStateLiveData(private val pagedListState: LiveData<PagedListState>, private val loadMore: LiveData<Any?>)
     : LiveData<ImageDataState>() {
 
-    private val observer = Observer<PagedListState> {
+    private val pagedListStateObserver = Observer<PagedListState> {
         when (it?.status) {
             PagedListStatus.WAITING_FOR_FIRST_PAGE -> postValue(ImageDataState.LOADING)
             PagedListStatus.FIRST_PAGE_ADDED -> {
@@ -28,11 +28,17 @@ class ImageDataStateLiveData(private val pagedListState: LiveData<PagedListState
         }
     }
 
+    private val loadingMoreObserver = Observer<Any?> {
+        postValue(ImageDataState.LOADING_MORE)
+    }
+
     override fun onActive() {
-        pagedListState.observeForever(observer)
+        pagedListState.observeForever(pagedListStateObserver)
+        loadMore.observeForever(loadingMoreObserver)
     }
 
     override fun onInactive() {
-        pagedListState.removeObserver(observer)
+        pagedListState.removeObserver(pagedListStateObserver)
+        loadMore.removeObserver(loadingMoreObserver)
     }
 }

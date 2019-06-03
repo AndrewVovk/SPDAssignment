@@ -4,6 +4,7 @@ import android.app.Application
 import android.graphics.Bitmap
 import android.os.Environment
 import android.os.Environment.isExternalStorageRemovable
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.getupside.spdassignment.model.PagedList
@@ -36,9 +37,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val error = SingleLiveEvent<String>()
 
-    private val repository = Repository(diskCacheDir, error::setValue)
+    private val bitmapDecoder = BitmapDecoder()
+
+    private val repository = Repository(diskCacheDir, bitmapDecoder::decode, error::setValue)
 
     private val networkManager = NetworkManager.instance
+
+    private val loadMore = SingleLiveEvent<Any?>()
 
     val data: ImageData = createImageData(createList())
 
@@ -49,26 +54,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun createImageData(pagedList: PagedList<ImageItem>) =
         object : ImageData {
 
-            override val state = ImageDataStateLiveData(pagedList.state)
+            override val state = ImageDataStateLiveData(pagedList.state, loadMore)
             override val size: Int get() = pagedList.size
-
-//            override fun get(position: Int) = ImageViewModelFactory {
-//                object : ImageState {
-//                    override val image = pagedList[position]
-//                    override val bitmap = MutableLiveData<Bitmap>().apply {
-//                        repository.getImage(pagedList[position].url, ::setValue)
-//                    }
-//                }
-//            }
 
             override fun get(position: Int) = object : ImageState {
                 override val image = pagedList[position]
-                override val bitmap = MutableLiveData<Bitmap>().apply {
+                override val bitmap = MutableLiveData<Bitmap?>().apply {
                     repository.getImage(pagedList[position], ::setValue)
                 }
             }
-
-            override fun getId(position: Int) = pagedList[position].id
         }
 
     private fun createList(): PagedList<ImageItem> {
@@ -82,7 +76,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         )
 
         list.onGetItem = { position, size ->
-            if (position == size - 4) provider.keepSearching()
+            if (position == size - 4) {
+                loadMore.call()
+                provider.keepSearching()
+            }
         }
 
         return list
@@ -91,5 +88,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun transform(galleries: List<Data>) =
         galleries
             .flatMap { it.images ?: emptyList() }
+            .filter { it.type != "video/mp4" }
             .map { ImageItem(it.id.toLowerCase(), it.link) }
 }

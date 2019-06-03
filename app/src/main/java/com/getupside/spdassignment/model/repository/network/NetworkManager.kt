@@ -1,6 +1,5 @@
 package com.getupside.spdassignment.model.repository.network
 
-import android.graphics.Bitmap
 import com.getupside.spdassignment.model.repository.network.data.Data
 import com.getupside.spdassignment.model.repository.network.data.GalleriesResponse
 import okhttp3.ResponseBody
@@ -9,7 +8,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import android.graphics.BitmapFactory
+import java.io.InputStream
 
 
 class NetworkManager private constructor() {
@@ -52,7 +51,7 @@ class NetworkManager private constructor() {
 
     fun getImage(
         url: String,
-        onBitmap: (Bitmap) -> Unit,
+        onInputStream: (InputStream) -> Unit,
         onError: (message: String?) -> Unit
     ) {
         imgurAPI.getImage(url).enqueue(
@@ -60,9 +59,7 @@ class NetworkManager private constructor() {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     if (response.isSuccessful) {
                         response.body()?.let {
-                            val options = BitmapFactory.Options()
-                            options.inPreferredConfig = Bitmap.Config.RGB_565
-                            BitmapFactory.decodeStream(it.byteStream(), null, options)?.let(onBitmap)
+                            onInputStream(it.byteStream())
                         }
                     } else {
                         onError(response.errorBody()?.string())

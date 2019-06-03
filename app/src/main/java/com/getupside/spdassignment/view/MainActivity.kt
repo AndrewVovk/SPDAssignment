@@ -21,18 +21,19 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val viewModel = ViewModelProviders.of(this)[MainViewModel::class.java]
-        val progressBar = findViewById<View>(R.id.progress_bar)
+        val mainProgressBar = findViewById<View>(R.id.progress_bar_main)
+        val lazyProgressBar = findViewById<View>(R.id.progress_bar_lazy)
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
 
         viewModel.data.state.observe(this, Observer { state ->
             when (state) {
                 ImageDataState.LOADING -> {
-                    progressBar.visibility = VISIBLE
+                    mainProgressBar.visibility = VISIBLE
                     recyclerView.visibility = GONE
                 }
                 ImageDataState.DATA_CREATED -> {
-                    progressBar.visibility = GONE
+                    mainProgressBar.visibility = GONE
                     recyclerView.visibility = VISIBLE
                     recyclerView.adapter = SimpleAdapter(
                         { viewModel.data.size },
@@ -41,11 +42,15 @@ class MainActivity : AppCompatActivity() {
                         ImageViewHolder::destroy
                     )
                 }
+                ImageDataState.LOADING_MORE -> {
+                    lazyProgressBar.visibility = VISIBLE
+                }
                 ImageDataState.DATA_ADDED -> {
+                    lazyProgressBar.visibility = GONE
                     recyclerView.adapter?.notifyDataSetChanged()
                 }
+                else -> mainProgressBar.visibility = GONE
             }
-
         })
 
         viewModel.error.observe(this, Observer {
