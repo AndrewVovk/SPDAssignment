@@ -4,7 +4,6 @@ import android.app.Application
 import android.graphics.Bitmap
 import android.os.Environment
 import android.os.Environment.isExternalStorageRemovable
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.getupside.spdassignment.model.PagedList
@@ -60,7 +59,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             override fun get(position: Int) = object : ImageState {
                 override val image = pagedList[position]
                 override val bitmap = MutableLiveData<Bitmap?>().apply {
-                    repository.getImage(pagedList[position], ::setValue)
+                    repository.getImage(pagedList[position], ::postValue)
                 }
             }
         }

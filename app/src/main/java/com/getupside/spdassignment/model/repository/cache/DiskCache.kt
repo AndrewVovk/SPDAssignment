@@ -40,34 +40,39 @@ class DiskCache(diskCacheDir: File) {
         }
     }
 
-    operator fun get(id: String): Bitmap? {
-        diskCacheLock.withLock {
-            while (diskCacheStarting) {
-                try {
-                    diskCacheLockCondition.await()
-                } catch (e: InterruptedException) {
+    operator fun get(id: String, onBitmap: (Bitmap?) -> Unit) {
+        thread {
+            diskCacheLock.withLock {
+                while (diskCacheStarting) {
+                    try {
+                        diskCacheLockCondition.await()
+                    } catch (e: InterruptedException) {
+                    }
                 }
-            }
-            return diskLruCache?.get(id)?.let {
-                val inputStream = it.getInputStream(0)
-                val bufferedInputStream = BufferedInputStream(inputStream, 8 * 1024)
-                BitmapFactory.decodeStream(bufferedInputStream).also {
-                    inputStream.close()
-                    bufferedInputStream.close()
-                }
+                onBitmap(diskLruCache?.get(id)?.let {
+                    val inputStream = it.getInputStream(0)
+                    val bufferedInputStream = BufferedInputStream(inputStream, 8 * 1024)
+                    BitmapFactory.decodeStream(bufferedInputStream).also {
+                        inputStream.close()
+                        bufferedInputStream.close()
+                    }
+                })
             }
         }
+
     }
 
     operator fun set(id: String, bitmap: Bitmap) {
-        synchronized(diskCacheLock) {
-            diskLruCache?.apply {
-                val editor = edit(id)
-                editor?.let {
-                    if (writeBitmapToFile(bitmap, it)) {
-                        diskLruCache?.flush()
-                        editor.commit()
-                    } else editor.abort()
+        thread {
+            synchronized(diskCacheLock) {
+                diskLruCache?.apply {
+                    val editor = edit(id)
+                    editor?.let {
+                        if (writeBitmapToFile(bitmap, it)) {
+                            diskLruCache?.flush()
+                            editor.commit()
+                        } else editor.abort()
+                    }
                 }
             }
         }

@@ -2,8 +2,6 @@ package com.getupside.spdassignment.view
 
 import android.graphics.Bitmap
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.widget.ImageView
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
@@ -15,7 +13,6 @@ class ImageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     private val bitmapObserver = Observer<Bitmap?> { bitmap ->
         val imageView = itemView.findViewById<ImageView>(R.id.image)
-        imageView.visibility = VISIBLE
         if (bitmap != null) {
             imageView.setImageBitmap(bitmap)
         } else {
