@@ -33,8 +33,8 @@ class ImageDataStateLiveData(private val pagedListState: LiveData<PagedListState
     }
 
     override fun onActive() {
-        pagedListState.observeForever(pagedListStateObserver)
         loadMore.observeForever(loadingMoreObserver)
+        pagedListState.observeForever(pagedListStateObserver)
     }
 
     override fun onInactive() {

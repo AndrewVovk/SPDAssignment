@@ -30,11 +30,9 @@ class MainActivity : AppCompatActivity() {
             when (state) {
                 ImageDataState.LOADING -> {
                     mainProgressBar.visibility = VISIBLE
-                    recyclerView.visibility = GONE
                 }
                 ImageDataState.DATA_CREATED -> {
                     mainProgressBar.visibility = GONE
-                    recyclerView.visibility = VISIBLE
                     recyclerView.adapter = SimpleAdapter(
                         { viewModel.data.size },
                         { ImageViewHolder(layoutInflater.inflate(R.layout.item_image, it, false)) },
@@ -47,7 +45,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 ImageDataState.DATA_ADDED -> {
                     lazyProgressBar.visibility = GONE
-                    recyclerView.adapter?.notifyDataSetChanged()
                 }
                 else -> mainProgressBar.visibility = GONE
             }
