@@ -4,8 +4,10 @@ import android.app.Application
 import android.graphics.Bitmap
 import android.os.Environment
 import android.os.Environment.isExternalStorageRemovable
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import com.getupside.spdassignment.ConnectivityLiveData
 import com.getupside.spdassignment.model.PagedList
 import com.getupside.spdassignment.model.SingleLiveEvent
 import com.getupside.spdassignment.model.repository.Repository
@@ -19,6 +21,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object {
         private const val DISK_CACHE_SUBDIR = "thumbnails"
+        private val TAG = MainViewModel::class.java.simpleName
     }
 
     private val diskCacheDir by lazy {
@@ -34,11 +37,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         File(cachePath + File.separator + DISK_CACHE_SUBDIR)
     }
 
-    val error = SingleLiveEvent<String>()
-
     private val bitmapDecoder = BitmapDecoder()
 
-    private val repository = Repository(diskCacheDir, bitmapDecoder::decode, error::setValue)
+    private val repository = Repository(diskCacheDir, bitmapDecoder::decode) {
+        Log.e(TAG, it)
+        connectivityLiveData.onError()
+    }
 
     private val networkManager = NetworkManager.instance
 
@@ -46,8 +50,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val data: ImageData = createImageData(createList())
 
+    private lateinit var provider: GetGalleries
+    val connectivityLiveData = ConnectivityLiveData()
+
     override fun onCleared() {
         repository.close()
+    }
+
+    fun retryToConnect() = connectivityLiveData.retry {
+        loadMore.postValue(null)
+        provider.keepSearching()
     }
 
     private fun createImageData(pagedList: PagedList<ImageItem>) =
@@ -67,11 +79,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun createList(): PagedList<ImageItem> {
         val list = PagedList<ImageItem>()
 
-        val provider = GetGalleries(
+        provider = GetGalleries(
             networkManager,
             { items, isFirstPage ->
                 list.addPage(transform(items), isFirstPage, false)
-            }, error::setValue
+            }, {
+                Log.e(TAG, it)
+                connectivityLiveData.onError()
+            }
         )
 
         list.onGetItem = { position, size ->

@@ -40,7 +40,7 @@ class DiskCache(diskCacheDir: File) {
         }
     }
 
-    operator fun get(id: String, onBitmap: (Bitmap?) -> Unit) {
+    fun get(id: String, onBitmap: (Bitmap?) -> Unit) {
         thread {
             diskCacheLock.withLock {
                 while (diskCacheStarting) {

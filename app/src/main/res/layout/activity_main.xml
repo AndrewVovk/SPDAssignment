@@ -5,7 +5,8 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center_horizontal"
-        android:layout_margin="8dp">
+        android:layout_margin="8dp"
+        android:id="@+id/root">
 
     <FrameLayout
             android:layout_width="match_parent"

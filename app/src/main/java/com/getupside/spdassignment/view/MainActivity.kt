@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -13,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.getupside.spdassignment.R
 import com.getupside.spdassignment.viewmodel.ImageDataState
 import com.getupside.spdassignment.viewmodel.MainViewModel
+import com.google.android.material.snackbar.Snackbar
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,6 +25,7 @@ class MainActivity : AppCompatActivity() {
         val mainProgressBar = findViewById<View>(R.id.progress_bar_main)
         val lazyProgressBar = findViewById<View>(R.id.progress_bar_lazy)
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
+        val rootView = findViewById<View>(R.id.root)
         recyclerView.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
 
         viewModel.data.state.observe(this, Observer { state ->
@@ -33,6 +35,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 ImageDataState.DATA_CREATED -> {
                     mainProgressBar.visibility = GONE
+                    lazyProgressBar.visibility = GONE
                     recyclerView.adapter = SimpleAdapter(
                         { viewModel.data.size },
                         { ImageViewHolder(layoutInflater.inflate(R.layout.item_image, it, false)) },
@@ -45,13 +48,21 @@ class MainActivity : AppCompatActivity() {
                 }
                 ImageDataState.DATA_ADDED -> {
                     lazyProgressBar.visibility = GONE
+                    recyclerView.adapter?.notifyDataSetChanged()
                 }
                 else -> mainProgressBar.visibility = GONE
             }
         })
 
-        viewModel.error.observe(this, Observer {
-            Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+        viewModel.connectivityLiveData.observe(this, Observer {
+            if (!it) {
+                lazyProgressBar.visibility = GONE
+                Snackbar
+                    .make(rootView, R.string.no_internet_connection, Snackbar.LENGTH_INDEFINITE)
+                    .setAction(R.string.retry) {
+                        viewModel.retryToConnect()
+                    }.show()
+            }
         })
     }
 }

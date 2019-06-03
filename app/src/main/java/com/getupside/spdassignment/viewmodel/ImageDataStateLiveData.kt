@@ -5,8 +5,10 @@ import androidx.lifecycle.Observer
 import com.getupside.spdassignment.model.PagedListState
 import com.getupside.spdassignment.model.PagedListStatus
 
-class ImageDataStateLiveData(private val pagedListState: LiveData<PagedListState>, private val loadMore: LiveData<Any?>)
-    : LiveData<ImageDataState>() {
+class ImageDataStateLiveData(
+    private val pagedListState: LiveData<PagedListState>,
+    private val loadMore: LiveData<Any?>
+) : LiveData<ImageDataState>() {
 
     private val pagedListStateObserver = Observer<PagedListState> {
         when (it?.status) {
@@ -29,7 +31,8 @@ class ImageDataStateLiveData(private val pagedListState: LiveData<PagedListState
     }
 
     private val loadingMoreObserver = Observer<Any?> {
-        postValue(ImageDataState.LOADING_MORE)
+        if (value != ImageDataState.LOADING)
+            postValue(ImageDataState.LOADING_MORE)
     }
 
     override fun onActive() {
