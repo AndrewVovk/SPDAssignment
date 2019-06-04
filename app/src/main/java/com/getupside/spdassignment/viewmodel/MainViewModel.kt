@@ -2,12 +2,12 @@ package com.getupside.spdassignment.viewmodel
 
 import android.app.Application
 import android.graphics.Bitmap
-import android.os.Environment
-import android.os.Environment.isExternalStorageRemovable
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.getupside.spdassignment.App
+import com.getupside.spdassignment.di.components.DaggerViewModelComponent
+import com.getupside.spdassignment.di.modules.CacheDirModule
+import com.getupside.spdassignment.di.modules.NetworkModule
 import com.getupside.spdassignment.model.PagedList
 import com.getupside.spdassignment.model.SingleLiveEvent
 import com.getupside.spdassignment.model.repository.Repository
@@ -21,29 +21,22 @@ import javax.inject.Inject
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object {
-        private const val DISK_CACHE_SUBDIR = "thumbnails"
         private val TAG = MainViewModel::class.java.simpleName
     }
 
     init {
-        getApplication<App>().applicationComponent.injectViewModel(this)
+        DaggerViewModelComponent.builder()
+            .networkModule(NetworkModule())
+            .cacheDirModule(CacheDirModule(application))
+            .build()
+            .injectViewModel(this)
     }
 
     @Inject
     lateinit var networkManager: NetworkManager
 
-    private val diskCacheDir by lazy {
-        val cachePath =
-            if (Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
-                || !isExternalStorageRemovable()
-            ) {
-                getApplication<Application>().externalCacheDir?.path
-            } else {
-                getApplication<Application>().cacheDir.path
-            }
-
-        File(cachePath + File.separator + DISK_CACHE_SUBDIR)
-    }
+    @Inject
+    lateinit var diskCacheDir: File
 
     private val bitmapDecoder = BitmapDecoder()
 

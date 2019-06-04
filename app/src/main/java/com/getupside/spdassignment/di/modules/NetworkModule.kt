@@ -1,4 +1,4 @@
-package com.getupside.spdassignment.di
+package com.getupside.spdassignment.di.modules
 
 import com.getupside.spdassignment.model.repository.network.ImgurAPI
 import com.getupside.spdassignment.model.repository.network.NetworkManager
@@ -6,6 +6,7 @@ import dagger.Module
 import dagger.Provides
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Singleton
 
 
 @Module
@@ -16,13 +17,13 @@ class NetworkModule {
     }
 
     @Provides
-    @ApplicationScope
+    @Singleton
     fun provideImgurAPI(retrofit: Retrofit): ImgurAPI {
         return retrofit.create<ImgurAPI>(ImgurAPI::class.java)
     }
 
     @Provides
-    @ApplicationScope
+    @Singleton
     fun provideRetrofit(): Retrofit {
         return Retrofit.Builder()
             .baseUrl(GALLERIES_URL)
@@ -31,7 +32,7 @@ class NetworkModule {
     }
 
     @Provides
-    @ApplicationScope
+    @Singleton
     fun provideNetworkManager(api: ImgurAPI): NetworkManager {
         return NetworkManager(api)
     }
