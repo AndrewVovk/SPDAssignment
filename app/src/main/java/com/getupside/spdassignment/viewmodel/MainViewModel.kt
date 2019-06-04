@@ -7,7 +7,7 @@ import android.os.Environment.isExternalStorageRemovable
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.getupside.spdassignment.ConnectivityLiveData
+import com.getupside.spdassignment.App
 import com.getupside.spdassignment.model.PagedList
 import com.getupside.spdassignment.model.SingleLiveEvent
 import com.getupside.spdassignment.model.repository.Repository
@@ -15,6 +15,7 @@ import com.getupside.spdassignment.model.repository.network.GetGalleries
 import com.getupside.spdassignment.model.repository.network.NetworkManager
 import com.getupside.spdassignment.model.repository.network.data.Data
 import java.io.File
+import javax.inject.Inject
 
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -23,6 +24,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         private const val DISK_CACHE_SUBDIR = "thumbnails"
         private val TAG = MainViewModel::class.java.simpleName
     }
+
+    init {
+        getApplication<App>().applicationComponent.injectViewModel(this)
+    }
+
+    @Inject
+    lateinit var networkManager: NetworkManager
 
     private val diskCacheDir by lazy {
         val cachePath =
@@ -39,12 +47,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val bitmapDecoder = BitmapDecoder()
 
-    private val repository = Repository(diskCacheDir, bitmapDecoder::decode) {
+    private val repository = Repository(networkManager, diskCacheDir, bitmapDecoder::decode) {
         Log.e(TAG, it)
         connectivityLiveData.onError()
     }
-
-    private val networkManager = NetworkManager.instance
 
     private val loadMore = SingleLiveEvent<Any?>()
 
