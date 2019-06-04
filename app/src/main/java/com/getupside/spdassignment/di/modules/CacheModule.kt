@@ -2,6 +2,8 @@ package com.getupside.spdassignment.di.modules
 
 import android.content.Context
 import android.os.Environment
+import com.getupside.spdassignment.model.repository.cache.DiskCache
+import com.getupside.spdassignment.model.repository.cache.MemoryCache
 import dagger.Module
 import dagger.Provides
 import java.io.File
@@ -28,4 +30,12 @@ class CacheModule(private val context: Context) {
 
         return File(cachePath + File.separator + DISK_CACHE_SUBDIR)
     }
+
+    @Provides
+    @Singleton
+    fun provideMemoryCache() = MemoryCache()
+
+    @Provides
+    @Singleton
+    fun provideDiskCache(diskCacheDir: File) = DiskCache(diskCacheDir)
 }

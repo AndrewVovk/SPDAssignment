@@ -1,6 +1,8 @@
 package com.getupside.spdassignment.di.modules
 
 import com.getupside.spdassignment.model.repository.Repository
+import com.getupside.spdassignment.model.repository.cache.DiskCache
+import com.getupside.spdassignment.model.repository.cache.MemoryCache
 import com.getupside.spdassignment.model.repository.network.NetworkManager
 import com.getupside.spdassignment.viewmodel.BitmapDecoder
 import dagger.Module
@@ -16,14 +18,16 @@ class RepositoryModule {
     @Singleton
     fun provideRepository(
         networkManager: NetworkManager,
-        diskCacheDir: File,
         bitmapDecoder: BitmapDecoder,
+        memoryCache: MemoryCache,
+        diskCache: DiskCache,
         onNetworkError: (String?) -> Unit
     ) =
         Repository(
             networkManager,
-            diskCacheDir,
             bitmapDecoder,
+            memoryCache,
+            diskCache,
             onNetworkError
         )
 }

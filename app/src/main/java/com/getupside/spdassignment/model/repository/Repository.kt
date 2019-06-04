@@ -12,12 +12,11 @@ import javax.inject.Inject
 
 class Repository @Inject constructor(
     private val networkManager: NetworkManager,
-    diskCacheDir: File,
     private val bitmapDecoder: BitmapDecoder,
+    private val memoryCache: MemoryCache,
+    private val diskCache: DiskCache,
     private val onError: (String?) -> Unit
 ) {
-    private val memoryCache = MemoryCache()
-    private val diskCache = DiskCache(diskCacheDir)
 
     fun getImage(imageItem: ImageItem, onBitmap: (Bitmap?) -> Unit) {
 
