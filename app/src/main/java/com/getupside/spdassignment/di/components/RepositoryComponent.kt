@@ -1,18 +1,22 @@
 package com.getupside.spdassignment.di.components
 
-import com.getupside.spdassignment.di.modules.CacheDirModule
+import com.getupside.spdassignment.di.modules.BitmapDecoderModule
+import com.getupside.spdassignment.di.modules.CacheModule
+import com.getupside.spdassignment.di.modules.ConnectivityLiveDataModule
 import com.getupside.spdassignment.di.modules.NetworkModule
 import com.getupside.spdassignment.model.repository.Repository
-import com.getupside.spdassignment.model.repository.network.NetworkManager
-import com.getupside.spdassignment.viewmodel.MainViewModel
 import dagger.Component
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [NetworkModule::class, CacheDirModule::class])
+@Component(
+    modules = [
+        NetworkModule::class,
+        CacheModule::class,
+        BitmapDecoderModule::class,
+        ConnectivityLiveDataModule::class
+    ]
+)
 interface RepositoryComponent {
-
-    fun provideNetworkManager(): NetworkManager
-
-    fun injectRepository(repository: Repository)
+    fun inject(repository: Repository)
 }

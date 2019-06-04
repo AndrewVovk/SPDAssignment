@@ -8,7 +8,7 @@ import java.io.File
 import javax.inject.Singleton
 
 @Module
-class CacheDirModule(private val context: Context) {
+class CacheModule(private val context: Context) {
 
     companion object {
         private const val DISK_CACHE_SUBDIR = "thumbnails"

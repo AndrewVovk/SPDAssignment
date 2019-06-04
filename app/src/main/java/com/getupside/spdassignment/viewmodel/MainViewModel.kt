@@ -6,7 +6,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.getupside.spdassignment.di.components.DaggerViewModelComponent
-import com.getupside.spdassignment.di.modules.CacheDirModule
+import com.getupside.spdassignment.di.modules.CacheModule
 import com.getupside.spdassignment.di.modules.NetworkModule
 import com.getupside.spdassignment.model.PagedList
 import com.getupside.spdassignment.model.SingleLiveEvent
@@ -14,7 +14,6 @@ import com.getupside.spdassignment.model.repository.Repository
 import com.getupside.spdassignment.model.repository.network.GetGalleries
 import com.getupside.spdassignment.model.repository.network.NetworkManager
 import com.getupside.spdassignment.model.repository.network.data.Data
-import java.io.File
 import javax.inject.Inject
 
 
@@ -27,30 +26,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     init {
         DaggerViewModelComponent.builder()
             .networkModule(NetworkModule())
-            .cacheDirModule(CacheDirModule(application))
+            .cacheModule(CacheModule(application))
             .build()
-            .injectViewModel(this)
+            .inject(this)
     }
 
     @Inject
     lateinit var networkManager: NetworkManager
 
     @Inject
-    lateinit var diskCacheDir: File
+    lateinit var repository: Repository
 
-    private val bitmapDecoder = BitmapDecoder()
-
-    private val repository = Repository(networkManager, diskCacheDir, bitmapDecoder::decode) {
-        Log.e(TAG, it)
-        connectivityLiveData.onError()
-    }
+    @Inject
+    lateinit var connectivityLiveData: ConnectivityLiveData
 
     private val loadMore = SingleLiveEvent<Any?>()
 
     val data: ImageData = createImageData(createList())
 
     private lateinit var provider: GetGalleries
-    val connectivityLiveData = ConnectivityLiveData()
 
     override fun onCleared() {
         repository.close()
