@@ -7,7 +7,6 @@ import com.getupside.spdassignment.model.repository.cache.MemoryCache
 import dagger.Module
 import dagger.Provides
 import java.io.File
-import javax.inject.Singleton
 
 @Module
 class CacheModule(private val context: Context) {
@@ -17,7 +16,6 @@ class CacheModule(private val context: Context) {
     }
 
     @Provides
-    @Singleton
     fun provideDiskCacheDir(): File {
         val cachePath =
             if (Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
@@ -32,10 +30,8 @@ class CacheModule(private val context: Context) {
     }
 
     @Provides
-    @Singleton
     fun provideMemoryCache() = MemoryCache()
 
     @Provides
-    @Singleton
     fun provideDiskCache(diskCacheDir: File) = DiskCache(diskCacheDir)
 }

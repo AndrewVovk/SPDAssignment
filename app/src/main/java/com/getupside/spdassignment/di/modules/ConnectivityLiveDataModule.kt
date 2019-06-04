@@ -5,13 +5,11 @@ import com.getupside.spdassignment.viewmodel.ConnectivityLiveData
 import com.getupside.spdassignment.viewmodel.MainViewModel
 import dagger.Module
 import dagger.Provides
-import javax.inject.Singleton
 
 @Module
 class ConnectivityLiveDataModule {
 
     @Provides
-    @Singleton
     fun provideOnNetworkErrorHandler(
         connectivityLiveData: ConnectivityLiveData
     ): (String?) -> Unit = {
@@ -20,6 +18,5 @@ class ConnectivityLiveDataModule {
     }
 
     @Provides
-    @Singleton
     fun provideConnectivityLiveData() = ConnectivityLiveData()
 }

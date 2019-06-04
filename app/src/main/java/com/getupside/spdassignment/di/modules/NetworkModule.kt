@@ -6,7 +6,6 @@ import dagger.Module
 import dagger.Provides
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import javax.inject.Singleton
 
 
 @Module
@@ -17,13 +16,11 @@ class NetworkModule {
     }
 
     @Provides
-    @Singleton
     fun provideImgurAPI(retrofit: Retrofit): ImgurAPI {
         return retrofit.create<ImgurAPI>(ImgurAPI::class.java)
     }
 
     @Provides
-    @Singleton
     fun provideRetrofit(): Retrofit {
         return Retrofit.Builder()
             .baseUrl(GALLERIES_URL)
@@ -32,7 +29,6 @@ class NetworkModule {
     }
 
     @Provides
-    @Singleton
     fun provideNetworkManager(api: ImgurAPI): NetworkManager {
         return NetworkManager(api)
     }

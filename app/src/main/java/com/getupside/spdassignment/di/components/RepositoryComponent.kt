@@ -6,9 +6,7 @@ import com.getupside.spdassignment.di.modules.ConnectivityLiveDataModule
 import com.getupside.spdassignment.di.modules.NetworkModule
 import com.getupside.spdassignment.model.repository.Repository
 import dagger.Component
-import javax.inject.Singleton
 
-@Singleton
 @Component(
     modules = [
         NetworkModule::class,
