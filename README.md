@@ -9,6 +9,7 @@ Based on:
 - LruCache
 - DiskLruCache
 - Retrofit 2
+- Dagger 2
 
 
 
@@ -21,7 +22,7 @@ Based on:
 
 Then enter the URL of this project and hit "Clone".
 
-![clone](https://user-images.githubusercontent.com/13447866/58370961-5b0b0380-7f15-11e9-9662-09d66b4d943e.jpg)
+![clone](https://user-images.githubusercontent.com/13447866/58930712-4b858900-8765-11e9-9c7e-7c100dcd42db.jpg)
 
 3. To build and run the app, select Run > Run in the menu bar. 
 
