@@ -2,56 +2,49 @@ package com.getupside.spdassignment.viewmodel
 
 import android.app.Application
 import android.graphics.Bitmap
-import android.os.Environment
-import android.os.Environment.isExternalStorageRemovable
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.getupside.spdassignment.ConnectivityLiveData
+import com.getupside.spdassignment.di.components.DaggerViewModelComponent
+import com.getupside.spdassignment.di.modules.CacheModule
+import com.getupside.spdassignment.di.modules.NetworkModule
 import com.getupside.spdassignment.model.PagedList
 import com.getupside.spdassignment.model.SingleLiveEvent
 import com.getupside.spdassignment.model.repository.Repository
 import com.getupside.spdassignment.model.repository.network.GetGalleries
 import com.getupside.spdassignment.model.repository.network.NetworkManager
 import com.getupside.spdassignment.model.repository.network.data.Data
-import java.io.File
+import javax.inject.Inject
 
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object {
-        private const val DISK_CACHE_SUBDIR = "thumbnails"
         private val TAG = MainViewModel::class.java.simpleName
     }
 
-    private val diskCacheDir by lazy {
-        val cachePath =
-            if (Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
-                || !isExternalStorageRemovable()
-            ) {
-                getApplication<Application>().externalCacheDir?.path
-            } else {
-                getApplication<Application>().cacheDir.path
-            }
-
-        File(cachePath + File.separator + DISK_CACHE_SUBDIR)
+    init {
+        DaggerViewModelComponent.builder()
+            .networkModule(NetworkModule())
+            .cacheModule(CacheModule(application))
+            .build()
+            .inject(this)
     }
 
-    private val bitmapDecoder = BitmapDecoder()
+    @Inject
+    lateinit var networkManager: NetworkManager
 
-    private val repository = Repository(diskCacheDir, bitmapDecoder::decode) {
-        Log.e(TAG, it)
-        connectivityLiveData.onError()
-    }
+    @Inject
+    lateinit var repository: Repository
 
-    private val networkManager = NetworkManager.instance
+    @Inject
+    lateinit var connectivityLiveData: ConnectivityLiveData
 
     private val loadMore = SingleLiveEvent<Any?>()
 
     val data: ImageData = createImageData(createList())
 
     private lateinit var provider: GetGalleries
-    val connectivityLiveData = ConnectivityLiveData()
 
     override fun onCleared() {
         repository.close()

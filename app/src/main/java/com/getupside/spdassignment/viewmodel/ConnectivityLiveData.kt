@@ -1,4 +1,4 @@
-package com.getupside.spdassignment
+package com.getupside.spdassignment.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import java.net.InetAddress

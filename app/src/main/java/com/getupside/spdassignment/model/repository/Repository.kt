@@ -4,34 +4,42 @@ import android.graphics.Bitmap
 import com.getupside.spdassignment.model.repository.cache.DiskCache
 import com.getupside.spdassignment.model.repository.cache.MemoryCache
 import com.getupside.spdassignment.model.repository.network.NetworkManager
+import com.getupside.spdassignment.viewmodel.BitmapDecoder
 import com.getupside.spdassignment.viewmodel.ImageItem
-import java.io.File
-import java.io.InputStream
+import javax.inject.Inject
 
 
-class Repository(
-    diskCacheDir: File,
-    private val decodeBitmap: (InputStream, (Bitmap?) -> Unit) -> Unit,
+class Repository @Inject constructor(
+    private val networkManager: NetworkManager,
+    private val bitmapDecoder: BitmapDecoder,
+    private val memoryCache: MemoryCache,
+    private val diskCache: DiskCache,
     private val onError: (String?) -> Unit
 ) {
-    private val memoryCache = MemoryCache()
-    private val diskCache = DiskCache(diskCacheDir)
 
     fun getImage(imageItem: ImageItem, onBitmap: (Bitmap?) -> Unit) {
 
-        memoryCache[imageItem.id]?.let(onBitmap) ?: diskCache.get(imageItem.id) {
-            it?.let { bitmap ->
-                memoryCache[imageItem.id] = bitmap
-                onBitmap(bitmap)
-            } ?: NetworkManager.instance.getImage(imageItem.url, { inputStream ->
-                decodeBitmap(inputStream) { bitmap ->
-                    bitmap?.let {
-                        diskCache[imageItem.id] = bitmap
-                        memoryCache[imageItem.id] = bitmap
-                        onBitmap(bitmap)
-                    }
+        val bitmapFromMemoryCache = memoryCache[imageItem.id]
+
+        if (bitmapFromMemoryCache != null) {
+            onBitmap(bitmapFromMemoryCache)
+        } else {
+            diskCache.get(imageItem.id) {
+                if (it != null) {
+                    memoryCache[imageItem.id] = it
+                    onBitmap(it)
+                } else {
+                    networkManager.getImage(imageItem.url, { inputStream ->
+                        bitmapDecoder.decode(inputStream) { bitmap ->
+                            bitmap?.let {
+                                diskCache[imageItem.id] = bitmap
+                                memoryCache[imageItem.id] = bitmap
+                                onBitmap(bitmap)
+                            }
+                        }
+                    }, onError)
                 }
-            }, onError)
+            }
         }
     }
 

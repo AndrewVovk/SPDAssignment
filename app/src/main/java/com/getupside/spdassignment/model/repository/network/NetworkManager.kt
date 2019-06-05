@@ -6,25 +6,12 @@ import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.io.InputStream
+import javax.inject.Inject
+import javax.inject.Singleton
 
-
-class NetworkManager private constructor() {
-    companion object {
-        private const val GALLERIES_URL = "https://api.imgur.com/3/"
-        val instance by lazy { NetworkManager() }
-    }
-
-    private val retrofit by lazy {
-        Retrofit.Builder()
-            .baseUrl(GALLERIES_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
-
-    private val imgurAPI by lazy { retrofit.create(ImgurAPI::class.java) }
+@Singleton
+class NetworkManager @Inject constructor(private val imgurAPI: ImgurAPI) {
 
     fun getGalleries(
         page: Int,
