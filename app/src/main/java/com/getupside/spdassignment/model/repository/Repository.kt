@@ -6,7 +6,6 @@ import com.getupside.spdassignment.model.repository.cache.MemoryCache
 import com.getupside.spdassignment.model.repository.network.NetworkManager
 import com.getupside.spdassignment.viewmodel.BitmapDecoder
 import com.getupside.spdassignment.viewmodel.ImageItem
-import java.io.File
 import javax.inject.Inject
 
 
@@ -20,19 +19,27 @@ class Repository @Inject constructor(
 
     fun getImage(imageItem: ImageItem, onBitmap: (Bitmap?) -> Unit) {
 
-        memoryCache[imageItem.id]?.let(onBitmap) ?: diskCache.get(imageItem.id) {
-            it?.let { bitmap ->
-                memoryCache[imageItem.id] = bitmap
-                onBitmap(bitmap)
-            } ?: networkManager.getImage(imageItem.url, { inputStream ->
-                bitmapDecoder.decode(inputStream) { bitmap ->
-                    bitmap?.let {
-                        diskCache[imageItem.id] = bitmap
-                        memoryCache[imageItem.id] = bitmap
-                        onBitmap(bitmap)
-                    }
+        val bitmapFromMemoryCache = memoryCache[imageItem.id]
+
+        if (bitmapFromMemoryCache != null) {
+            onBitmap(bitmapFromMemoryCache)
+        } else {
+            diskCache.get(imageItem.id) {
+                if (it != null) {
+                    memoryCache[imageItem.id] = it
+                    onBitmap(it)
+                } else {
+                    networkManager.getImage(imageItem.url, { inputStream ->
+                        bitmapDecoder.decode(inputStream) { bitmap ->
+                            bitmap?.let {
+                                diskCache[imageItem.id] = bitmap
+                                memoryCache[imageItem.id] = bitmap
+                                onBitmap(bitmap)
+                            }
+                        }
+                    }, onError)
                 }
-            }, onError)
+            }
         }
     }
 
