@@ -22,7 +22,8 @@ Based on:
 
 Then enter the URL of this project and hit "Clone".
 
-![clone](https://user-images.githubusercontent.com/13447866/58930712-4b858900-8765-11e9-9c7e-7c100dcd42db.jpg)
+![clone](https://user-images.githubusercontent.com/13447866/58930784-999a8c80-8765-11e9-9df9-476d9b166eb1.jpg)
+
 
 3. To build and run the app, select Run > Run in the menu bar. 
 
